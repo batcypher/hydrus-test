@@ -1,21 +1,15 @@
 """Basic CRUD operations for the server.
-
     ===============================
     Imports :
-
     sqlalchemy.orm.with_polymorphic : Load columns for inheriting classes.
     Ref : http://docs.sqlalchemy.org/en/latest/orm/query.html
-
     sqlalchemy.exists : A convenience method that turns a query into an EXISTS subquery
     of the form EXISTS (SELECT 1 FROM … WHERE …).
     Ref : http://docs.sqlalchemy.org/en/latest/orm/query.html
-
     sqlalchemy.orm.exc.NoResultFound : A database result was required but none was found.
     Ref : http://docs.sqlalchemy.org/en/latest/orm/exceptions.html?highlight=result%20found#sqlalchemy.orm.exc.NoResultFound
-
     sqlalchemy.orm.session.Session : Manages persistence operations for ORM-mapped objects.
     Ref : http://docs.sqlalchemy.org/en/latest/orm/session_api.html?highlight=session#module-sqlalchemy.orm.session
-
     hydrus.data.db_models.Graph : Model for a graph that store triples of instance from the other models to map relationships.
     hydrus.data.db_models.BaseProperty : Model for Basic Property.
     hydrus.data.db_models.RDFClass : Model for Classes specifically RDF-OWL or RDF-HYDRA classes.
@@ -24,12 +18,9 @@
     hydrus.data.db_models.GraphIAC : Graph model for Instance >> AbstractProperty >> Class.
     hydrus.data.db_models.GraphIIT : Graph model for Instance >> InstanceProperty >> Terminal.
     hydrus.data.db_models.GraphIII : Graph model for Instance >> InstanceProperty >> Instance.
-
     Ref : ./db_models.py
-
     hydrus.data.exceptions : Contains all exceptions .
     typing : Module which provides support for type hints .
-
 """  # nopep8
 import copy
 from sqlalchemy.orm.exc import NoResultFound
@@ -58,6 +49,7 @@ from hydrus.data.resource_based_classes import (
     get_single_response,
     get_database_class
 )
+from hydrus.conf import get_host_domain
 
 
 def get(id_: str, type_: str, api_name: str, session: scoped_session,
@@ -70,12 +62,9 @@ def get(id_: str, type_: str, api_name: str, session: scoped_session,
     :param path: endpoint
     :param collection: True if the type_ is of a collection, False for any other class
     :return: response to the request
-
-
     Raises:
         ClassNotFound: If the `type_` is not a valid/defined RDFClass.
         InstanceNotFound: If no Instance of the 'type_` class if found.
-
     """
     query_info = {
         "@type": type_,
@@ -95,10 +84,7 @@ def insert(object_: Dict[str, Any], session: scoped_session, id_: Optional[str] 
     :param session: sqlalchemy scoped session
     :param id_: id of the object to be inserted (optional param)
     :param collection: True if the type_ is of a collection, False for any other class
-
     :return: ID of object inserted
-
-
     Raises:
         ClassNotFound: If `object_["@type"] is not a valid/defined RDFClass.
         InstanceExists: If an Instance `id_` already exists.
@@ -126,7 +112,6 @@ def insert_multiple(objects_: List[Dict[str,
     :param session: scoped session from getSession in utils
     :param id_: optional parameter containing the ids of objects that have to be inserted
     :return: Ids that have been inserted
-
     Raises:
         ClassNotFound: If any dict of `objects_` is not a valid/defined RDFClass.
         InstanceExists: If an Instance with same id already exists.
@@ -136,14 +121,13 @@ def insert_multiple(objects_: List[Dict[str,
             not an Instance property
         NotAnAbstractProperty: If any property of a dict in `object_` is a
             valid/defined RDFClass but is not a dictionary neither an Abstract Property
-
     """
     # import pdb;pdb.set_trace()
 
     id_list = id_.split(',')
 
     # list to hold all the ids of inserted objects
-    instance_id_list = []
+    instance_id_list = list()
 
     for index in range(len(objects_)):
         id_of_object_ = None
@@ -164,11 +148,9 @@ def delete(id_: str, type_: str, session: scoped_session, collection: bool = Fal
     :param id_: id of object to be deleted
     :param type_: type of object to be deleted
     :param session: sqlalchemy scoped session
-
     Raises:
         ClassNotFound: If `type_` does not represent a valid/defined RDFClass.
         InstanceNotFound: If no instace of type `type_` with id `id_` exists.
-
     """
     query_info = {
         "@type": type_,
@@ -186,12 +168,10 @@ def delete_multiple(
     :param id_: list of ids for objects to be deleted\
     :param type_: type of object to be deleted
     :param session: sqlalchemy scoped session
-
     Raises:
         ClassNotFound: If `type_` does not represent a valid/defined RDFClass.
         InstanceNotFound: If any instance with type 'type_' and any id in 'id_' list
             does not exist.
-
     """
     id_list = id_.split(',')
     for object_id_ in id_list:
@@ -242,10 +222,8 @@ def get_collection(API_NAME: str,
     :param path: endpoint
     :param collection: True if the type_ is of a collection, False for any other class
     :return: response containing a page of the objects of that particular type_
-
     Raises:
         ClassNotFound: If `type_` does not represent a valid/defined RDFClass.
-
     """
     database_search_params = copy.deepcopy(search_params)
     pagination_parameters = ["page", "pageIndex", "limit", "offset"]
@@ -270,11 +248,9 @@ def get_single(type_: str, api_name: str, session: scoped_session,
     :param session: sqlalchemy scoped session
     :param path: endpoint
     :return: response containing information about a single object
-
     Raises:
         ClassNotFound: If `type_` does not represt a valid/defined RDFClass.
         InstanceNotFound: If no Instance with type `type_` exists.
-
     """
     instance = get_single_response(session, type_)
     object_ = get(instance.id, type_, session=session, api_name=api_name, path=path)
@@ -290,11 +266,9 @@ def insert_single(object_: Dict[str, Any], session: scoped_session) -> Any:
     :param object_: object to be inserted
     :param session: sqlalchemy scoped session
     :return:
-
     Raises:
         ClassNotFound: If `type_` does not represt a valid/defined RDFClass.
         Instance: If an Instance of type `type_` already exists.
-
     """
     type_ = object_["@type"]
     database_class = get_database_class(type_)
@@ -318,11 +292,9 @@ def update_single(object_: Dict[str,
     :param api_name: api name specified while starting server
     :param path: endpoint
     :return: id of the updated object
-
     Raises:
         ClassNotFound: If `object['@type']` does not represt a valid/defined RDFClass.
         InstanceNotFound: If no Instance of the class exists.
-
     """
     type_ = object_["@type"]
     instance = get_single_response(session, type_)
@@ -341,11 +313,9 @@ def delete_single(type_: str, session: scoped_session) -> None:
     :param type_: type of object to be deleted
     :param session: sqlalchemy scoped session
     :return: None
-
     Raises:
         ClassNotFound: If `type_` does not represt a valid/defined RDFClass.
         InstanceNotFound: If no Instance of the class exists.
-
     """
     instance = get_single_response(session, type_)
 
@@ -430,10 +400,10 @@ def pagination(filtered_instances, path, type_, API_NAME,
     :return: response containing a page of the objects of that particular type_
     """
     collection_template = {
-        "@id": f"/{API_NAME}/{path}/",
+        "@id": f"{get_host_domain()}/{API_NAME}/{path}/",
         "@context": None,
         "@type": f"{path}",
-        "members": []
+        "members": list()
     }  # type: Dict[str, Any]
     result_length = len(filtered_instances)
     try:
@@ -449,7 +419,7 @@ def pagination(filtered_instances, path, type_, API_NAME,
         current_page_size = result_length - offset
     for i in range(offset, offset+current_page_size):
         object_template = {
-            "@id": f"/{API_NAME}/{type_}/{filtered_instances[i].id}",
+            "@id": f"{get_host_domain()}/{API_NAME}/{type_}/{filtered_instances[i].id}",
             "@type": type_
         }
         collection_template["members"].append(object_template)
@@ -482,7 +452,6 @@ def pagination(filtered_instances, path, type_, API_NAME,
 def item_exists(item_type, item_id, session):
     """Check if the instance with type 'item_type' and id 'item_id'
     exists in the database. Returns True if exists else False
-
     :param item_type: The @type of the instance
     :type item_type: str
     :param item_id: The id of the instance in the database

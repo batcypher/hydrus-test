@@ -9,6 +9,7 @@ from hydrus.utils import get_collections_and_parsed_classes
 from hydra_python_core.doc_writer import HydraIriTemplate, IriTemplateMapping, HydraLink
 from hydra_python_core.doc_writer import HydraError, DocUrl
 from hydrus.socketio_factory import socketio
+from hydrus.conf import get_host_domain
 
 
 def validObject(object_: Dict[str, Any]) -> bool:
@@ -82,10 +83,10 @@ def hydrafy(object_: Dict[str, Any], path: Optional[str]) -> Dict[str, Any]:
     """
     if path == object_["@type"]:
         object_[
-            "@context"] = f"/{get_api_name()}/contexts/{object_['@type']}.jsonld"
+            "@context"] = f"{get_host_domain()}/{get_api_name()}/contexts/{object_['@type']}.jsonld"
     else:
         object_[
-            "@context"] = f"/{get_api_name()}/contexts/{path}.jsonld"
+            "@context"] = f"{get_host_domain()}/{get_api_name()}/contexts/{path}.jsonld"
     return object_
 
 
@@ -430,7 +431,6 @@ def validate_object(object_: Dict[str, Any],
     """
     Check if the object dict passed in POST can be inserted/updated
     in database.
-
     :param object_: Object to be checked
     :param obj_type: The required object type
     :param class_path: Path of the class
@@ -444,7 +444,6 @@ def validate_object(object_: Dict[str, Any],
 def get_context(category: str) -> Response:
     """
     Generate the context for a given category.
-
     :param category: The category of class for which context is required
     :type category: str
     :return: Response with context
@@ -468,7 +467,6 @@ def get_context(category: str) -> Response:
 def error_response(error: HydraError) -> Response:
     """
     Generate the response if there is an error while performing any operation
-
     :param error: HydraError object which will help in generating response
     :type error: HydraError
     :return: Error response with appropriate status code
@@ -480,7 +478,6 @@ def error_response(error: HydraError) -> Response:
 
 def send_update(method: str, path: str):
     """Handler for sending synchronization update to all connected clients.
-
     :param method: Method type of the operation.
     :type method: str
     :param path: Path to the Item collection to which update is made.
@@ -505,7 +502,6 @@ def get_path_from_type(type_: str) -> str:
 def parse_collection_members(object_: dict) -> dict:
     """Parse the members of a collection to make it easier
     to insert in database.
-
     :param object_: The body of the request having object members
     :type object_: dict
     :return: Object with parsed members
